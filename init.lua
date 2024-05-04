@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -151,12 +151,21 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+-- tabspace
+vim.o.tabstop = 4
+vim.o.expandtab = true
+vim.o.softtabstop = 4
+vim.o.shiftwidth = 4
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+
+vim.keymap.set('n', '<Leader>b', ':Telescope file_browser<CR>', { desc = 'Open File Browser' })
+vim.keymap.set('n', '<Leader>fb', ':Telescope file_browser path=%:p:h select_buffer=true<CR>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
@@ -233,7 +242,128 @@ require('lazy').setup({
   --
   --  This is equivalent to:
   --    require('Comment').setup({})
+  {
+    'mfussenegger/nvim-dap',
 
+    dependencies = {
+
+      -- fancy UI for the debugger
+      {
+        'rcarriga/nvim-dap-ui',
+        dependencies = { 'nvim-neotest/nvim-nio' },
+      -- stylua: ignore
+      keys = {
+        { "<leader>du", function() require("dapui").toggle({ }) end, desc = "Dap UI" },
+        { "<leader>de", function() require("dapui").eval() end, desc = "Eval", mode = {"n", "v"} },
+      },
+        opts = {},
+        config = function(_, opts)
+          -- setup dap config by VsCode launch.json file
+          -- require("dap.ext.vscode").load_launchjs()
+          local dap = require 'dap'
+
+          dap.adapters.coreclr = {
+            type = 'executable',
+            command = '/usr/local/bin/netcoredbg/netcoredbg',
+            args = { '--interpreter=vscode' },
+          }
+
+          dap.configurations.cs = {
+            {
+              type = 'coreclr',
+              name = 'launch - netcoredbg',
+              request = 'launch',
+              program = function()
+                return vim.fn.input('Path to dll', vim.fn.getcwd() .. '/bin/Debug/', 'file')
+              end,
+            },
+          }
+
+          local dapui = require 'dapui'
+          dapui.setup(opts)
+          dap.listeners.after.event_initialized['dapui_config'] = function()
+            dapui.open {}
+          end
+          dap.listeners.before.event_terminated['dapui_config'] = function()
+            dapui.close {}
+          end
+          dap.listeners.before.event_exited['dapui_config'] = function()
+            dapui.close {}
+          end
+        end,
+      },
+
+      -- virtual text for the debugger
+      {
+        'theHamsta/nvim-dap-virtual-text',
+        opts = {},
+      },
+
+      -- which key integration
+      {
+        'folke/which-key.nvim',
+        optional = true,
+        opts = {
+          defaults = {
+            ['<leader>d'] = { name = '+debug' },
+          },
+        },
+      },
+
+      -- mason.nvim integration
+      {
+        'jay-babu/mason-nvim-dap.nvim',
+        dependencies = 'mason.nvim',
+        cmd = { 'DapInstall', 'DapUninstall' },
+        opts = {
+          -- Makes a best effort to setup the various debuggers with
+          -- reasonable debug configurations
+          automatic_installation = true,
+
+          -- You can provide additional configuration to the handlers,
+          -- see mason-nvim-dap README for more information
+          handlers = {},
+
+          -- You'll need to check that you have the required things installed
+          -- online, please don't ask me how to install them :)
+          ensure_installed = {
+            -- Update this to ensure that you have the debuggers for the langs you want
+          },
+        },
+      },
+    },
+
+  -- stylua: ignore
+  keys = {
+    { "<leader>dB", function() require("dap").set_breakpoint(vim.fn.input('Breakpoint condition: ')) end, desc = "Breakpoint Condition" },
+    { "<leader>db", function() require("dap").toggle_breakpoint() end, desc = "Toggle Breakpoint" },
+    { "<leader>dc", function() require("dap").continue() end, desc = "Continue" },
+    { "<leader>da", function() require("dap").continue({ before = get_args }) end, desc = "Run with Args" },
+    { "<leader>dC", function() require("dap").run_to_cursor() end, desc = "Run to Cursor" },
+    { "<leader>dg", function() require("dap").goto_() end, desc = "Go to Line (No Execute)" },
+    { "<leader>di", function() require("dap").step_into() end, desc = "Step Into" },
+    { "<leader>dj", function() require("dap").down() end, desc = "Down" },
+    { "<leader>dk", function() require("dap").up() end, desc = "Up" },
+    { "<leader>dl", function() require("dap").run_last() end, desc = "Run Last" },
+    { "<leader>do", function() require("dap").step_out() end, desc = "Step Out" },
+    { "<leader>dO", function() require("dap").step_over() end, desc = "Step Over" },
+    { "<leader>dp", function() require("dap").pause() end, desc = "Pause" },
+    { "<leader>dr", function() require("dap").repl.toggle() end, desc = "Toggle REPL" },
+    { "<leader>ds", function() require("dap").session() end, desc = "Session" },
+    { "<leader>dt", function() require("dap").terminate() end, desc = "Terminate" },
+    { "<leader>dw", function() require("dap.ui.widgets").hover() end, desc = "Widgets" },
+  },
+  },
+  {
+    'nvim-telescope/telescope-file-browser.nvim',
+    dependencies = { 'nvim-telescope/telescope.nvim', 'nvim-lua/plenary.nvim' },
+  },
+  {
+    'windwp/nvim-ts-autotag',
+    config = function()
+      require('nvim-ts-autotag').setup()
+    end,
+  },
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
 
@@ -354,12 +484,17 @@ require('lazy').setup({
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
           },
+          file_browser = {
+            theme = 'ivy',
+            hijack_netrw = true,
+          },
         },
       }
 
       -- Enable telescope extensions, if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
+      pcall(require('telescope').load_extension, 'file_browser')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
@@ -624,7 +759,7 @@ require('lazy').setup({
     },
   },
 
-  { -- Autocompletion
+  { -- Autocompletion code_action
     'hrsh7th/nvim-cmp',
     event = 'InsertEnter',
     dependencies = {
@@ -722,17 +857,20 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`
-    'folke/tokyonight.nvim',
+    'ellisonleao/gruvbox.nvim',
     priority = 1000, -- make sure to load this before all the other start plugins
     init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'gruvbox'
 
       -- You can configure highlights by doing something like
       vim.cmd.hi 'Comment gui=none'
     end,
+    opts = {
+      transparent_mode = true,
+    },
   },
 
   -- Highlight todo, notes, etc in comments
