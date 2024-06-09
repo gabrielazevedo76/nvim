@@ -32,6 +32,7 @@ What is Kickstart?
     make Neovim your own! That might mean leaving kickstart just the way it is for a while
     or immediately breaking it into modular pieces. It's up to you!
 
+
     If you don't know anything about Lua, I recommend taking some time to read through
     a guide. One possible example which will only take 10-15 minutes:
       - https://learnxinyminutes.com/docs/lua/
@@ -229,6 +230,8 @@ vim.opt.rtp:prepend(lazypath)
 --  To update plugins, you can run
 --    :Lazy update
 --
+
+--
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
@@ -242,6 +245,36 @@ require('lazy').setup({
   --
   --  This is equivalent to:
   --    require('Comment').setup({})
+
+  {
+    'onsails/lspkind.nvim',
+  },
+  {
+    'zbirenbaum/copilot.lua',
+    cmd = 'Copilot',
+    event = 'InsertEnter',
+    config = function()
+      require('copilot').setup {}
+    end,
+  },
+  {
+    'zbirenbaum/copilot-cmp',
+    config = function()
+      require('copilot_cmp').setup {}
+    end,
+  },
+
+  {
+    'diegoulloao/neofusion.nvim',
+    priority = 1000,
+    config = true,
+    init = function()
+      vim.o.background = 'dark'
+      vim.cmd.colorscheme 'neofusion'
+    end,
+    opts = ...,
+  },
+
   {
     'mfussenegger/nvim-dap',
 
@@ -796,6 +829,8 @@ require('lazy').setup({
       local luasnip = require 'luasnip'
       luasnip.config.setup {}
 
+      local lspkind = require 'lspkind'
+
       cmp.setup {
         snippet = {
           expand = function(args)
@@ -847,6 +882,14 @@ require('lazy').setup({
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
           { name = 'path' },
+          { name = 'copilot' },
+        },
+        formatting = {
+          format = lspkind.cmp_format {
+            mode = 'symbol',
+            max_width = 50,
+            symbol_map = { Copilot = '' },
+          },
         },
       }
     end,
@@ -863,7 +906,7 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'gruvbox'
+      --vim.cmd.colorscheme 'gruvbox'
 
       -- You can configure highlights by doing something like
       vim.cmd.hi 'Comment gui=none'
