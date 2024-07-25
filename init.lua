@@ -245,7 +245,6 @@ require('lazy').setup({
   --
   --  This is equivalent to:
   --    require('Comment').setup({})
-
   {
     'onsails/lspkind.nvim',
   },
