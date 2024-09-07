@@ -245,6 +245,24 @@ require('lazy').setup({
   --
   --  This is equivalent to:
   --    require('Comment').setup({})
+  --{
+  {
+    'ray-x/lsp_signature.nvim',
+    event = 'VeryLazy',
+    opts = {},
+    config = function(_, opts)
+      require('lsp_signature').setup(opts)
+    end,
+    keys = {
+      {
+        '<leader>k',
+        function()
+          vim.lsp.buf.signature_help()
+        end,
+        desc = 'Signature Help',
+      },
+    },
+  },
   {
     'onsails/lspkind.nvim',
   },
@@ -267,13 +285,18 @@ require('lazy').setup({
     'diegoulloao/neofusion.nvim',
     priority = 1000,
     config = true,
-    init = function()
-      vim.o.background = 'dark'
-      vim.cmd.colorscheme 'neofusion'
-    end,
-    opts = ...,
   },
-
+  {
+    'neanias/everforest-nvim',
+    priority = 1000,
+    version = false,
+    lazy = false,
+    config = function()
+      -- vim.o.background = 'dark'
+      vim.cmd.colorscheme 'everforest'
+    end,
+    opts = {},
+  },
   {
     'mfussenegger/nvim-dap',
 
