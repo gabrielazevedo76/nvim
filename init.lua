@@ -246,6 +246,64 @@ require('lazy').setup({
   --  This is equivalent to:
   --    require('Comment').setup({})
   --{
+
+  {
+    'stevearc/oil.nvim',
+
+    dependencies = 'echasnovski/mini.icons',
+
+    cmd = 'Oil',
+    keys = {
+      {
+        '<leader>o',
+        function()
+          require('oil').open()
+        end,
+        desc = 'Signature Help',
+      },
+    },
+    opts = {
+      default_file_explorer = true,
+      delete_to_trash = true,
+      skip_confirm_for_simple_edits = false,
+      columns = {
+        'icon',
+      },
+      view_options = {
+        show_hidden = true,
+        is_always_hidden = function(name, _)
+          return name == '..' or name == '.git'
+        end,
+      },
+      win_options = {
+        wrap = true,
+        cursorcolumn = true,
+      },
+      watch_for_changes = true,
+      use_default_keymaps = true,
+      show_hidden = true,
+    },
+  },
+  {
+    'folke/flash.nvim',
+    event = 'VeryLazy',
+    opts = {},
+    keys = {
+      {
+        'S',
+        mode = { 'n', 'x', 'o' },
+        function()
+          require('flash').jump()
+        end,
+        desc = 'Flash',
+      },
+    },
+  },
+  {
+    'windwp/nvim-autopairs',
+    event = 'InsertEnter',
+    config = true,
+  },
   {
     'ray-x/lsp_signature.nvim',
     event = 'VeryLazy',
